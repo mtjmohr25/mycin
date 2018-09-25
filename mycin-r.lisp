@@ -1,38 +1,47 @@
 (uiop/package:define-package :mycin/mycin-r (:use :cl :mycin/mycin))
 (in-package :mycin/mycin-r)
-;;;don't edit above
-;;;; -*- Mode: Lisp; Syntax: Common-Lisp -*-
 ;;;; Code from Paradigms of AI Programming
 ;;;; Copyright (c) 1991 Peter Norvig
 
-;;;; File mycin-r.lisp: Sample parameter list and rulebase for mycin.
-;;; Parameters for patient:
-(defparm name patient t "Patient's name: " t read-line)
-(defparm sex patient (member male female) "Sex:" t)
-(defparm age patient number "Age:" t)
-(defparm burn patient (member no mild serious)
-  "Is ~a a burn patient?  If so, mild or serious?" t)
-(defparm compromised-host patient yes/no
-  "Is ~a a compromised host?")
+(defparm name :context patient
+  :type-restriction t
+  :prompt "Patient's name: " :ask-first t :reader read-line)
+(defparm sex :context patient
+  :type-restriction (member male female)
+  :prompt "Sex:" :ask-first t)
+(defparm age  :context patient
+  :type-restriction number
+  :prompt "Age:" :ask-first t)
+(defparm burn :context patient
+  :type-restriction (member no mild serious)
+  :prompt "Is ~a a burn patient?  If so, mild or serious?" :ask-first t)
+(defparm compromised-host
+  :context patient :type-restriction yes/no
+  :prompt "Is ~a a compromised host?")
 
 ;;; Parameters for culture:
-(defparm site culture (member blood)
-  "From what site was the specimen for ~a taken?" t)
-(defparm days-old culture number
-  "How many days ago was this culture (~a) obtained?" t)
+(defparm site :context culture
+  :type-restriction (member blood)
+  :prompt "From what site was the specimen for ~a taken?" :ask-first t)
+(defparm days-old :context culture
+  :type-restriction number
+  :prompt "How many days ago was this culture (~a) obtained?" :ask-first t)
 
 ;;; Parameters for organism:
-(defparm identity organism
-  (member pseudomonas klebsiella enterobacteriaceae
-          staphylococcus bacteroides streptococcus)
-  "Enter the identity (genus) of ~a:" t)
-(defparm gram organism (member acid-fast pos neg)
-  "The gram stain of ~a:" t)
-(defparm morphology organism (member rod coccus)
-  "Is ~a a rod or coccus (etc.):")
-(defparm aerobicity organism (member aerobic anaerobic))
-(defparm growth-conformation organism 
-  (member chains pairs clumps))
+(defparm identity :context organism
+  :type-restriction (member pseudomonas klebsiella enterobacteriaceae
+                            staphylococcus bacteroides streptococcus)
+  :prompt "Enter the identity (genus) of ~a:" :ask-first t)
+(defparm gram :context organism
+  :type-restriction (member acid-fast pos neg)
+  :prompt "The gram stain of ~a:" :ask-first t)
+(defparm morphology :context organism
+  :type-restriction (member rod coccus)
+  :prompt "Is ~a a rod or coccus (etc.):")
+(defparm aerobicity :context organism
+  :type-restriction (member aerobic anaerobic))
+(defparm growth-conformation :context organism
+  :type-restriction (member chains pairs clumps))
 
 (clear-rules)
 

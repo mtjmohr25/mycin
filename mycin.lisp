@@ -1,6 +1,6 @@
 (uiop/package:define-package :mycin/mycin (:nicknames) (:use :cl) (:shadow)
-                             (:export :defparam :defparm :name :sex :age :site
-                              :days-old :clear-rules :defrule :then)
+                             (:export :defparm :name :sex :age :site :days-old
+                              :clear-rules :defrule :then)
                              (:intern))
 (in-package :mycin/mycin)
 ;;don't edit above
@@ -141,11 +141,13 @@
         (t (cons (list (first reply) (second reply))
                  (parse-reply (rest2 reply))))))
 
-(defstruct (parm (:constructor 
-                  new-parm (name &optional context type-restriction
-                            prompt ask-first reader)))
-  name (context nil) (prompt "~&What is the ~*~a of ~2:*~a?")
-  (ask-first nil) (type-restriction t) (reader 'read))
+(defstruct (parm (:constructor new-parm (name &key context type-restriction prompt ask-first reader)))
+  name
+  (context nil)
+  (prompt "~&What is the ~*~a of ~2:*~a?")
+  (ask-first nil)
+  (type-restriction t)
+  (reader 'read))
 
 (defmacro defparm (parm &rest args)
   "Define a parameter."
