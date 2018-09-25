@@ -314,12 +314,14 @@
     ;; Do some error checking:
     (check-conditions number premises 'premise)
     (check-conditions number conclusions 'conclusion)
-    (when (not (cf-p cf))
+    (unless (cf-p cf)
       (warn "Rule ~a: Illegal certainty factor: ~a" number cf))
     ;; Now build the rule:
     `(put-rule
-       (make-rule :number ',number :cf ,cf :premises ',premises
-                  :conclusions ',conclusions))))
+      (make-rule :number ',number
+                 :cf ,cf
+                 :premises ',premises
+                 :conclusions ',conclusions))))
 
 (defun check-conditions (rule-num conditions kind)
   "Warn if any conditions are invalid."
