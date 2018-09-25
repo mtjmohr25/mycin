@@ -1,6 +1,6 @@
 (uiop/package:define-package :mycin/mycin (:nicknames) (:use :cl) (:shadow)
                              (:export :defparm :name :sex :age :site :days-old
-                              :clear-rules :defrule :then)
+                              :clear-rules :defrule :then :yes/no)
                              (:intern))
 (in-package :mycin/mycin)
 ;;don't edit above
@@ -16,8 +16,8 @@
      ,@(when doc (list doc))))
 
 (defun rest2 (x)
-    "The rest of a list after the first TWO elements."
-    (rest (rest x)))
+  "The rest of a list after the first TWO elements."
+  (rest (rest x)))
 
 (define-constant true   +1.0)
 (define-constant false  -1.0)
@@ -149,9 +149,13 @@
   (type-restriction t)
   (reader 'read))
 
+(defvar *parms* '())
+
 (defmacro defparm (parm &rest args)
   "Define a parameter."
-  `(setf (get ',parm 'parm) (apply #'new-parm ',parm ',args)))
+  `(progn
+     (pushnew ',parm *parms*)
+     (setf (get ',parm 'parm) (apply #'new-parm ',parm ',args))))
 
 (defun parm-type (parm-name)
   "What type is expected for a value of this parameter?"
