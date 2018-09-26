@@ -1,6 +1,16 @@
 (uiop/package:define-package :mycin/mycin (:nicknames) (:use :cl) (:shadow)
                              (:export :defparm :name :sex :age :site :days-old
-                              :clear-rules :defrule :then :yes/no)
+                              :clear-rules :defrule :then :yes/no
+                              :male :female :no :mild :serious :blood
+                              :pseudomonas :klebsiella :enterobacteriaceae
+                              :staphylococcus :bacteroides :streptococcus
+                              :yes :no
+                              :acid-fast :pos :neg
+                              :rod :coccus
+                              :aerobic :anaerobic
+                              :chains :pairs :clumps
+                              :help :why :rule :unk :unknown :?
+                              :is)
                              (:intern))
 (in-package :mycin/mycin)
 ;;don't edit above
@@ -18,6 +28,17 @@
 (defun rest2 (x)
   "The rest of a list after the first TWO elements."
   (rest (rest x)))
+
+(defun partition-if (pred list)
+  "Return 2 values: elements of list that satisfy pred,
+  and elements that don't."
+  (let ((yes-list nil)
+        (no-list nil))
+    (dolist (item list)
+      (if (funcall pred item)
+          (push item yes-list)
+          (push item no-list)))
+    (values (nreverse yes-list) (nreverse no-list))))
 
 (define-constant true   +1.0)
 (define-constant false  -1.0)
@@ -53,9 +74,12 @@
   (and (numberp x) (<= false x true)))
 
 (defvar *mycin-db* (make-hash-table :test #'equal))
-(defun get-db (key) (gethash key *mycin-db*))
-(defun put-db (key val) (setf (gethash key *mycin-db*) val))
-(defun clear-db () (clrhash *mycin-db*))
+(defun get-db (key)
+  (gethash key *mycin-db*))
+(defun put-db (key val)
+  (setf (gethash key *mycin-db*) val))
+(defun clear-db ()
+  (clrhash *mycin-db*))
 
 (defun get-vals (parm inst)
   "Return a list of (val cf) pairs for this (parm inst)."
@@ -175,7 +199,8 @@
 
 (defmacro defcontext (name &optional initial-data goals)
   "Define a context."
-  `(make-context :name ',name :initial-data ',initial-data
+  `(make-context :name ',name
+                 :initial-data ',initial-data
                  :goals ',goals))
 
 (defun new-instance (context)
@@ -414,4 +439,3 @@
     (list (defcontext patient  (name sex age)  ())
           (defcontext culture  (site days-old) ())
           (defcontext organism ()              (identity)))))
-
