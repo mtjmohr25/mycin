@@ -1,6 +1,7 @@
 (uiop/package:define-package :mycin/mycin (:nicknames) (:use :cl) (:shadow)
                              (:export :defparm :name :sex :age :site :days-old
                               :clear-rules :defrule :then :yes/no
+                              :patient :culture :organism
                               :male :female :no :mild :serious :blood
                               :pseudomonas :klebsiella :enterobacteriaceae
                               :staphylococcus :bacteroides :streptococcus
@@ -74,9 +75,11 @@
   (and (numberp x) (<= false x true)))
 
 (defvar *mycin-db* (make-hash-table :test #'equal))
+
 (defun get-db (key)
   (gethash key *mycin-db*))
 (defun put-db (key val)
+  #+debug-print (print (list :put-db key val))
   (setf (gethash key *mycin-db*) val))
 (defun clear-db ()
   (clrhash *mycin-db*))
@@ -226,7 +229,9 @@
 
 (defun get-rules (parm)
   "A list of rules that help determine this parameter."
-  (gethash parm *rules*))
+  (let ((result (gethash parm *rules*)))
+    #+debug-print (print (list :get-rules parm (mapcar #'rule-number result)))
+    result))
 
 (defun clear-rules ()
   (clrhash *rules*))
@@ -235,6 +240,7 @@
   "Find the value(s) of this parameter for this instance,
   unless the values are already known.
   Some parameters we ask first; others we use rules first."
+  #+debug-print (print (list :find-out parm (get-parm parm) inst))
   (or (get-db `(known ,parm ,inst))
       (put-db `(known ,parm ,inst)
               (if (parm-ask-first (get-parm parm))
@@ -248,6 +254,7 @@
 
 (defun use-rule (rule)
   "Apply a rule to the current situation."
+  #+debug-print (print (list :use-rule rule))
   ;; Keep track of the rule for the explanation system:
   (put-db 'current-rule rule)
   ;; If any premise is known false, give up.
@@ -255,6 +262,7 @@
   ;; draw conclusions (weighted with the certainty factor).
   (unless (some #'reject-premise (rule-premises rule))
     (let ((cf (satisfy-premises (rule-premises rule) true)))
+      #+debug-print (print (list :use-rule-cf (rule-number rule) cf))
       (when (true-p cf)
         (dolist (conclusion (rule-conclusions rule))
           (conclude conclusion (* cf (rule-cf rule))))
@@ -274,14 +282,17 @@
 (defun eval-condition (condition &optional (find-out-p t))
   "See if this condition is true, optionally using FIND-OUT
   to determine unknown parameters."
+  #+debug-print (print (list :eval-condition condition find-out-p))
   (multiple-value-bind (parm inst op val)
       (parse-condition condition)
     (when find-out-p
       (find-out parm inst))
     ;; Add up all the (val cf) pairs that satisfy the test
-    (loop for pair in (get-vals parm inst)
-          when (funcall op (first pair) val)
-          sum (second pair))))
+    (let ((result (loop for pair in (get-vals parm inst)
+                        when (funcall op (first pair) val)
+                        sum (second pair))))
+      #+debug-print (print (list :eval-condition-result condition result))
+      result)))
                
 (defun reject-premise (premise)
   "A premise is rejected if it is known false, without
